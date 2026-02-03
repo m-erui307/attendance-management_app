@@ -16,6 +16,12 @@ services:
     volumes:
       - ./src:/var/www/
 
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
   mysql:
     image: mysql:8.0.26
     environment:

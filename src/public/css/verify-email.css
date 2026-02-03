@@ -1,0 +1,42 @@
+.header {
+    height: 60px;
+    max-width: 1540px;
+    width: 100%;
+    background-color: black;
+    display: flex;
+    align-items: center;
+}
+
+.header-logo {
+    margin-left: 15px;
+}
+
+.verification-content {
+    margin: 0 auto;
+    padding: 30px 15px;
+    max-width: 1230px;
+    text-align: center;
+}
+
+.verification-message {
+    margin-top: 150px;
+    margin-bottom: 40px;
+    font-weight: bold;
+}
+
+.verification-btn {
+    border-radius: 7px;
+    padding: 10px 14px;
+    border: 1px solid;
+    background-color: #c0c0c0;
+    text-decoration: none;
+    color: black;
+}
+
+.verification-resend {
+    margin-top: 40px;
+    margin-bottom: 50px;
+    border: none;
+    background-color: white;
+    color: #0068b7;
+}
