@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
+use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\BreakController;
 use App\Http\Controllers\UserController;
 
 /*
@@ -17,8 +19,10 @@ use App\Http\Controllers\UserController;
 |
 */
 
-// 画面確認用（後で消す）
+
+// ビュー確認用
 Route::get('/', [UserController::class, 'index']);
+
 
 // ログイン
 Route::get('/login', function () {
@@ -58,3 +62,26 @@ Route::get('/attendance', function () {
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
+
+Route::middleware(['auth'])->group(function () {
+
+    // 勤怠画面
+    Route::get('/attendance', [AttendanceController::class, 'index'])
+        ->name('attendance.index');
+
+    // 出勤
+    Route::post('/attendance/start', [AttendanceController::class, 'start'])
+        ->name('attendance.start');
+
+    // 退勤
+    Route::post('/attendance/end', [AttendanceController::class, 'end'])
+        ->name('attendance.end');
+
+    // 休憩開始
+    Route::post('/break/start', [BreakController::class, 'start'])
+        ->name('break.start');
+
+    // 休憩終了
+    Route::post('/break/end', [BreakController::class, 'end'])
+        ->name('break.end');
+});

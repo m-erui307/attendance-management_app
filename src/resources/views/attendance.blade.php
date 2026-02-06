@@ -27,13 +27,42 @@
   <main>
     <div class="content">
       <div class="situation">
-        勤務外
+        @if (!$attendance || !$attendance->clock_in)
+          勤務外
+        @elseif ($attendance->clock_out)
+          退勤済
+        @elseif ($attendance->breaks()->whereNull('break_end')->exists())
+          休憩中
+        @else
+          出勤中
+        @endif
       </div>
-      <div class="date" id="current-date"></div>
-      <div class="time" id="current-time"></div>
-      <button class="situation-btn">
-        出勤
-      </button>
+      <div class="date" id="current-date">
+      </div>
+      <div class="time" id="current-time">
+      </div>
+      @if (!$attendance || !$attendance->clock_in)
+      <form method="post" action="/attendance/start">@csrf
+        <button class="clock-in_btn">出勤</button>
+      </form>
+      @elseif ($attendance->clock_out)
+      <p class="clock-out_msg">
+        お疲れ様でした。
+      </p>
+      @elseif ($attendance->breaks()->whereNull('break_end')->exists())
+      <form method="post" action="/break/end">@csrf
+        <button class="end-break_btn">休憩戻</button>
+      </form>
+      @else
+      <div class="btn-content">
+        <form method="post" action="/attendance/end">@csrf
+          <button class="clock-out_btn">退勤</button>
+        </form>
+        <form method="post" action="/break/start">@csrf
+          <button class="start-break_btn">休憩入</button>
+        </form>
+      </div>
+      @endif
     </div>
   </main>
   <script>
