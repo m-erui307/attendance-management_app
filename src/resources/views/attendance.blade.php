@@ -13,7 +13,7 @@
     <nav class="header-nav">
       <ul class="header-nav-list">
         <li class="header-nav-item"><a href="">勤怠</a></li>
-        <li class="header-nav-item"><a href="">勤怠一覧</a></li>
+        <li class="header-nav-item"><a href="{{ route('attendance.list') }}">勤怠一覧</a></li>
         <li class="header-nav-item"><a href="">申請</a></li>
         <li>
           <form action="{{ route('logout') }}" method="post">

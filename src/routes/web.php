@@ -85,3 +85,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/break/end', [BreakController::class, 'end'])
         ->name('break.end');
 });
+
+Route::get('/attendance/list', [AttendanceController::class, 'list'])
+    ->name('attendance.list');

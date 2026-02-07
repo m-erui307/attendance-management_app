@@ -28,7 +28,11 @@
     <div class="content">
       <h2 class="title">勤怠一覧</h2>
       <div class="calendar-nav">
-        2023/06
+        <button class="last-month_btn"><span class="arrow">←</span>前月</button>
+        <div class="calendar">
+          2023/06
+        </div>
+        <button class="next-month_btn">翌月<span class="arrow">→</span></button>
       </div>
       <table class="attendance-table">
         <thead>
@@ -41,3 +45,21 @@
             <th>詳細</th>
           </tr>
         </thead>
+        <tbody>
+          @foreach($calendar as $item)
+          @php $attendance = $item['attendance']; @endphp
+          <tr>
+            <td>{{ $item['date']->locale('ja')->isoFormat('MM/DD(ddd)') }}</td>
+            <td>{{ optional($attendance?->clock_in)->format('H:i') ?? '' }}</td>
+            <td>{{ optional($attendance?->clock_out)->format('H:i') ?? '' }}</td>
+            <td>{{ $attendance?->break_time ?? '' }}</td>
+            <td>{{ $attendance?->total_time ?? '' }}</td>
+            <td><a href="">詳細</a></td>
+          </tr>
+          @endforeach
+        </tbody>
+      </table>
+    </div>
+  </main>
+</body>
+</html>
