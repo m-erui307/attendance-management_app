@@ -6,7 +6,9 @@ use Illuminate\Http\Request;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\BreakController;
+use App\Http\Controllers\AdminAttendanceController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AdminStaffController;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,8 +44,7 @@ Route::get('/email/verify', function () {
 // メール認証完了（リンククリック時）
 Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
     $request->fulfill();
-
-    return redirect()->intended();
+    return redirect()->route('attendance.index');
 })->middleware(['auth', 'signed'])->name('verification.verify');
 
 // 認証メール再送
@@ -52,11 +53,6 @@ Route::post('/email/verification-notification', function (Request $request) {
 
     return back()->with('message', '認証メールを再送しました。');
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
-
-// 勤怠画面（ログイン＋メール認証必須）
-Route::get('/attendance', function () {
-    return view('attendance');
-})->middleware(['auth', 'verified'])->name('attendance');
 
 // ログアウト
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
@@ -67,6 +63,7 @@ Route::middleware(['auth'])->group(function () {
 
     // 勤怠画面
     Route::get('/attendance', [AttendanceController::class, 'index'])
+        ->middleware('verified')
         ->name('attendance.index');
 
     // 出勤
@@ -88,3 +85,51 @@ Route::middleware(['auth'])->group(function () {
 
 Route::get('/attendance/list', [AttendanceController::class, 'list'])
     ->name('attendance.list');
+
+Route::get('/attendance/detail/{date}', [AttendanceController::class, 'show'])
+    ->name('attendance.show');
+
+Route::put('/attendance/detail/{date}', [AttendanceController::class, 'update'])
+    ->name('attendance.update');
+
+Route::prefix('admin')->group(function () {
+
+    // ログイン画面表示
+    Route::get('/login', function () {
+        return view('admin_login');
+    })->middleware('guest:admin')->name('admin.login');
+
+    // ログアウト
+    Route::post('/logout', [AdminAttendanceController::class, 'logout'])
+        ->middleware('auth:admin')
+        ->name('admin.logout');
+
+});
+
+
+Route::prefix('admin')
+    ->middleware('auth:admin')
+    ->group(function () {
+
+        Route::get('/attendance', [AdminAttendanceController::class, 'index'])
+            ->name('admin.attendance.list');
+
+        Route::get('/attendance/{user}/{date}',
+            [AdminAttendanceController::class, 'show'])
+            ->name('admin.attendance.show');
+
+        Route::put('/attendance/{user}/{date}',
+            [AdminAttendanceController::class, 'update'])
+            ->name('admin.attendance.update');
+});
+
+
+Route::get('/admin/staff', [AdminStaffController::class, 'index'])
+    ->name('admin.staff.list');
+
+Route::get('/staff/{user}', [AdminStaffController::class, 'show'])
+        ->name('admin.staff.show');
+
+Route::get('/requests', function () {
+    return view('request-list');
+})->middleware(['auth'])->name('request.list');

@@ -60,6 +60,11 @@ main {
     margin-bottom: 40px;
 }
 
+.calendar-icon {
+    width: 20px;
+    height: 20px;
+}
+
 .arrow {
     color: #c0c0c0;
     font-weight: bold;
@@ -67,8 +72,8 @@ main {
 }
 
 .last-month_btn {
-    border: none;
-    background-color: #fff;
+    text-decoration: none;
+    color: #707070;
 }
 
 .calendar {
@@ -76,16 +81,14 @@ main {
 }
 
 .next-month_btn {
-    border: none;
-    background-color: #fff;
-}
-
-.attendance-table {
-    background-color: #fff;
+    text-decoration: none;
+    color: #707070;
 }
 
 .attendance-table {
     width: 100%;
+    color: #707070;
+    background-color: #fff;
     border-radius: 8px;
 }
 
@@ -100,5 +103,10 @@ td {
 
 th {
     padding: 6px;
+}
+
+.table_detail {
+    color: #000;
+    text-decoration: none;
 }
 

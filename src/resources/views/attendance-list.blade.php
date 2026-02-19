@@ -28,11 +28,14 @@
     <div class="content">
       <h2 class="title">勤怠一覧</h2>
       <div class="calendar-nav">
-        <button class="last-month_btn"><span class="arrow">←</span>前月</button>
+        <a class="last-month_btn"
+        href="{{ route('attendance.list', ['month' => $prevMonth]) }}"><span class="arrow">←</span>前月</a>
         <div class="calendar">
-          2023/06
+          <img class="calendar-icon" src="../../../img/calendar-icon.png" alt="カレンダー">
+          {{ $targetMonth->format('Y/m') }}
         </div>
-        <button class="next-month_btn">翌月<span class="arrow">→</span></button>
+        <a class="next-month_btn"
+        href="{{ route('attendance.list', ['month' => $nextMonth]) }}">翌月<span class="arrow">→</span></a>
       </div>
       <table class="attendance-table">
         <thead>
@@ -50,11 +53,11 @@
           @php $attendance = $item['attendance']; @endphp
           <tr>
             <td>{{ $item['date']->locale('ja')->isoFormat('MM/DD(ddd)') }}</td>
-            <td>{{ optional($attendance?->clock_in)->format('H:i') ?? '' }}</td>
-            <td>{{ optional($attendance?->clock_out)->format('H:i') ?? '' }}</td>
-            <td>{{ $attendance?->break_time ?? '' }}</td>
-            <td>{{ $attendance?->total_time ?? '' }}</td>
-            <td><a href="">詳細</a></td>
+            <td>{{ $attendance?->clock_in?->format('H:i') }}</td>
+            <td>{{ $attendance?->clock_out?->format('H:i') }}</td>
+            <td>{{ $attendance?->break_time }}</td>
+            <td>{{ $attendance?->total_time }}</td>
+            <td><a class="table_detail" href="{{ route('attendance.show', $item['date']->format('Y-m-d')) }}">詳細</a></td>
           </tr>
           @endforeach
         </tbody>

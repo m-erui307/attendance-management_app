@@ -1,0 +1,107 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1540px;
+    height: 60px;
+    padding: 0 10px;
+    background-color: #000;
+    color: #fff;
+}
+
+.header-nav-list {
+    display: flex;
+    font-weight: bold;
+}
+
+.header-nav-item a {
+    margin-right: 20px;
+    text-decoration: none;
+    color: #fff;
+}
+
+.header-logout {
+    color: #fff;
+    background-color: #000;
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+main {
+    background-color: #eaeaea;
+    min-height: calc(100vh - 60px);
+}
+
+.content {
+    max-width: 1540px;
+    margin: 0 auto;
+    padding: 0px 260px;
+    text-align: center;
+    padding-top: 50px;
+    padding-bottom: 150px;
+}
+
+.title {
+    padding-left: 10px;
+    border-left: 5px solid #000;
+    text-align: left;
+    margin-bottom: 40px;
+}
+
+.detail-table {
+    background-color: #fff;
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 30px;
+}
+
+.year {
+    margin-left: 5px;
+    margin-right: 125px;
+}
+
+td {
+    border-bottom: 2px solid #eaeaea;
+    padding-left: 30px;
+    text-align: left;
+}
+
+th {
+    border-bottom: 2px solid #eaeaea;
+    text-align: left;
+    padding: 16px 50px;
+}
+
+.edit_btn {
+    color: #fff;
+    background-color: #000;
+    font-weight: bold;
+    border: none;
+    border-radius: 3px;
+    padding: 6px 24px;
+    display: block;
+    margin-left: auto;
+}
+
+input[type="time"]::-webkit-calendar-picker-indicator {
+    display: none;
+}
+
+input {
+    border: 2px solid #eaeaea;
+    border-radius: 3px;
+    padding: 4px 10px;
+}
+
+.tilde {
+    margin: 0 50px;
+}
+
+.remark {
+    width: 250px;
+    border: 2px solid #eaeaea;
+    border-radius: 3px;
+    margin-top: 5px;
+}
+

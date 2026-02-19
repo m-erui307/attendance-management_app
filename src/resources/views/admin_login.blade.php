@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ログイン</title>
   <link rel="stylesheet" href="{{ asset('css/sanitize.css') }}">
-  <link rel="stylesheet" href="{{ asset('css/admin-login.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/admin_login.css') }}">
 </head>
 <body>
   <header class="header">
@@ -16,18 +16,19 @@
       <div class="login-form__heading">
         <h1>管理者ログイン</h1>
       </div>
-      <form class="form" action="/login" method="post" novalidate>
+      <form class="form" action="{{ url('/login') }}" method="post" novalidate>
         @csrf
+        <input type="hidden" name="role" value="admin">
         <div class="form__group">
           <div class="form__group-title">
             <span class="form__label--item">メールアドレス</span>
           </div>
           <div class="form__group-content">
             <div class="form__input--text">
-              <input type="email" name="admin_email" value="{{ old('admin_email') }}" />
+              <input type="email" name="email" value="{{ old('email') }}" />
             </div>
             <div class="form__error">
-              @error('admin_email')
+              @error('email')
               {{ $message }}
               @enderror
             </div>
@@ -39,10 +40,10 @@
           </div>
           <div class="form__group-content">
             <div class="form__input--text">
-              <input type="password" name="admin_password" />
+              <input type="password" name="password" />
             </div>
             <div class="form__error">
-              @error('admin_password')
+              @error('password')
               {{ $message }}
               @enderror
             </div>

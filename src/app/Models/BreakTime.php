@@ -18,12 +18,29 @@ class BreakTime extends Model
     ];
 
     protected $casts = [
-    'start_time' => 'datetime',
-    'end_time'   => 'datetime',
+    'break_start' => 'datetime',
+    'break_end'   => 'datetime',
     ];
 
     public function attendance()
     {
         return $this->belongsTo(Attendance::class);
+    }
+
+    public function getBreakMinutesAttribute()
+    {
+        if (!$this->break_start || !$this->break_end) {
+            return 0;
+        }
+
+        return $this->break_start
+            ->diffInMinutes($this->break_end);
+    }
+
+    public function getBreakTimeAttribute()
+    {
+        $minutes = $this->break_minutes;
+
+        return sprintf('%02d:%02d', floor($minutes / 60), $minutes % 60);
     }
 }
