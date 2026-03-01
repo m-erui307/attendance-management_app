@@ -14,9 +14,9 @@
       <ul class="header-nav-list">
         <li class="header-nav-item"><a href="{{ route('admin.attendance.list') }}">勤怠一覧</a></li>
         <li class="header-nav-item"><a href="{{ route('admin.staff.list') }}">スタッフ一覧</a></li>
-        <li class="header-nav-item"><a href="">申請</a></li>
+        <li class="header-nav-item"><a href="{{ route('admin.request.list') }}">申請一覧</a></li>
         <li>
-          <form action="{{ route('logout') }}" method="post">
+          <form action="{{ route('admin.logout') }}" method="post">
             @csrf
             <button class="header-logout">ログアウト</button>
           </form>
@@ -66,6 +66,7 @@
           @endforeach
         </tbody>
       </table>
+      <a class="csv-btn" href="{{ route('admin.staff.attendance.csv', ['user' => $user->id, 'month' => $targetMonth->format('Y-m')]) }}">CSV出力</a>
     </div>
   </main>
 </body>

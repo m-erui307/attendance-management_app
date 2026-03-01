@@ -16,7 +16,7 @@
       <div class="login-form__heading">
         <h1>管理者ログイン</h1>
       </div>
-      <form class="form" action="{{ url('/login') }}" method="post" novalidate>
+      <form class="form" action="{{ url('/admin/login') }}" method="post" novalidate>
         @csrf
         <input type="hidden" name="role" value="admin">
         <div class="form__group">

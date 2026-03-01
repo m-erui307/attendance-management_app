@@ -9,6 +9,8 @@ use App\Http\Controllers\BreakController;
 use App\Http\Controllers\AdminAttendanceController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminStaffController;
+use App\Http\Controllers\AdminRequestController;
+use App\Http\Controllers\RequestController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,10 +22,6 @@ use App\Http\Controllers\AdminStaffController;
 | contains the "web" middleware group. Now create something great!
 |
 */
-
-
-// ビュー確認用
-Route::get('/', [UserController::class, 'index']);
 
 
 // ログイン
@@ -89,7 +87,7 @@ Route::get('/attendance/list', [AttendanceController::class, 'list'])
 Route::get('/attendance/detail/{date}', [AttendanceController::class, 'show'])
     ->name('attendance.show');
 
-Route::put('/attendance/detail/{date}', [AttendanceController::class, 'update'])
+Route::put('/attendance/{date}', [AttendanceController::class, 'update'])
     ->name('attendance.update');
 
 Route::prefix('admin')->group(function () {
@@ -98,6 +96,17 @@ Route::prefix('admin')->group(function () {
     Route::get('/login', function () {
         return view('admin_login');
     })->middleware('guest:admin')->name('admin.login');
+
+    // 管理者ログイン処理
+    Route::post('/login', function (Request $request) {
+
+        $admin = \App\Models\Admin::where('email', $request->email)->first();
+
+        if ($admin && \Hash::check($request->password, $admin->password)) {
+            \Auth::guard('admin')->login($admin);
+            return redirect()->route('admin.attendance.list');
+        }
+    })->middleware('guest:admin');
 
     // ログアウト
     Route::post('/logout', [AdminAttendanceController::class, 'logout'])
@@ -121,15 +130,34 @@ Route::prefix('admin')
         Route::put('/attendance/{user}/{date}',
             [AdminAttendanceController::class, 'update'])
             ->name('admin.attendance.update');
+
+        Route::get('/request/{id}',
+            [AdminRequestController::class, 'show'])
+            ->name('admin.request.show');
+
+        Route::get('/admin/staff', [AdminStaffController::class, 'index'])
+            ->name('admin.staff.list');
+
+        Route::get('/staff/{user}', [AdminStaffController::class, 'show'])
+            ->name('admin.staff.show');
+
+        Route::get('/admin/request-list', [AdminRequestController::class, 'index'])
+            ->name('admin.request.list');
+
+        Route::put('/admin/request/{id}/approve',
+        [AdminRequestController::class, 'approve'])
+            ->name('admin.request.approve');
+
+        Route::get('/admin/staff/{user}/attendance/csv', [AdminAttendanceController::class, 'exportCsv'])
+            ->name('admin.staff.attendance.csv');
+
 });
 
 
-Route::get('/admin/staff', [AdminStaffController::class, 'index'])
-    ->name('admin.staff.list');
+Route::middleware('auth')->group(function () {
+    // 申請一覧画面
+    Route::get('/requests', [RequestController::class, 'index'])->name('request.list');
 
-Route::get('/staff/{user}', [AdminStaffController::class, 'show'])
-        ->name('admin.staff.show');
-
-Route::get('/requests', function () {
-    return view('request-list');
-})->middleware(['auth'])->name('request.list');
+    // 申請送信
+    Route::post('/requests', [RequestController::class, 'store'])->name('request.store');
+});

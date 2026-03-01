@@ -129,97 +129,92 @@ class AttendanceController extends Controller
     public function show($date)
 {
     $date = Carbon::parse($date);
+    $user = auth()->user();
 
+    // 通常の勤怠
     $attendance = Attendance::with('breaks')
-        ->where('user_id', auth()->id())
+        ->where('user_id', $user->id)
         ->where('work_date', $date)
         ->first();
 
-    if ($attendance) {
-        // 休憩（分）
-        $breakMinutes = $attendance->breaks->sum(function ($break) {
-            if (!$break->break_start || !$break->break_end) {
-                return 0;
-            }
+    // その日の最新申請
+    $attendanceRequest = \App\Models\AttendanceRequest::where('user_id', $user->id)
+        ->where('target_date', $date)
+        ->latest()
+        ->first();
 
-            return Carbon::parse($break->break_start)
-                ->diffInMinutes(Carbon::parse($break->break_end));
-        });
+    // 申請があれば優先表示
+    if ($attendanceRequest) {
 
-        // 勤務時間（分）
-        $workMinutes = 0;
-        if ($attendance->clock_in && $attendance->clock_out) {
-            $workMinutes =
-                Carbon::parse($attendance->clock_in)
-                    ->diffInMinutes(Carbon::parse($attendance->clock_out))
-                - $breakMinutes;
-        }
+        $breaks = collect($attendanceRequest->breaks ?? [])
+    ->filter(function ($break) {
+        return !empty($break['start']) || !empty($break['end']);
+    })
+    ->map(function ($break) {
+        return [
+            'break_start' => $break['start'] ?? null,
+            'break_end'   => $break['end'] ?? null,
+        ];
+    })
+    ->values()
+    ->toArray();
 
-        $attendance->break_time = sprintf(
-            '%02d:%02d',
-            intdiv($breakMinutes, 60),
-            $breakMinutes % 60
-        );
-
-        $attendance->total_time = sprintf(
-            '%02d:%02d',
-            intdiv($workMinutes, 60),
-            $workMinutes % 60
-        );
+        return view('attendance-detail', [
+            'attendance' => $attendanceRequest,
+            'user' => $user,
+            'date' => $date,
+            'breaks' => $breaks,
+            'pendingRequest' => $attendanceRequest->status === 'pending',
+        ]);
     }
 
-    return view('attendance-detail', [
-        'attendance' => $attendance,
-        'date' => $date,
-        'user' => auth()->user(),
-    ]);
+    // 申請がなければ通常勤怠
+    $pendingRequest = false;
+
+    $breaks = $attendance
+        ? $attendance->breaks->map(function ($break) {
+            return [
+                'break_start' => optional($break->break_start)->format('H:i'),
+                'break_end' => optional($break->break_end)->format('H:i'),
+            ];
+        })->toArray()
+        : [];
+
+    return view('attendance-detail', compact(
+        'attendance',
+        'user',
+        'date',
+        'breaks',
+        'pendingRequest'
+    ));
 }
 
     public function update(Request $request, $date)
 {
     $date = Carbon::parse($date);
+    $user = auth()->user();
 
-    $attendance = Attendance::firstOrCreate(
-        [
-            'user_id' => auth()->id(),
-            'work_date' => $date,
-        ],
-        [
-            'clock_in' => $request->clock_in,
-        ]
-    );
+    $pendingRequest = \App\Models\AttendanceRequest::where('user_id', $user->id)
+        ->where('target_date', $date)
+        ->where('status', 'pending')
+        ->exists();
 
-    $attendance->update([
-        'clock_in'  => $request->clock_in,
-        'clock_out' => $request->clock_out,
-        'remark'    => $request->remark,
-    ]);
-
-    // 休憩（最大2回）
-    foreach ($request->breaks ?? [] as $index => $breakData) {
-
-        if (empty($breakData['start']) && empty($breakData['end'])) {
-            continue;
-        }
-
-        $break = $attendance->breaks[$index] ?? null;
-
-        if ($break) {
-            $break->update([
-                'break_start' => $breakData['start'],
-                'break_end'   => $breakData['end'],
-            ]);
-        } else {
-            $attendance->breaks()->create([
-                'break_start' => $breakData['start'],
-                'break_end'   => $breakData['end'],
-            ]);
-        }
+    if ($pendingRequest) {
+        // 承認待ちの間は更新せず戻す
+        return redirect()->route('attendance.show', $date->format('Y-m-d'));
     }
 
-    return redirect()->route(
-        'attendance.show',
-        $date->format('Y-m-d')
-    );
+    // AttendanceRequest として申請を作成
+    \App\Models\AttendanceRequest::create([
+        'user_id'     => $user->id,
+        'target_date' => $date,
+        'clock_in'    => $request->clock_in,
+        'clock_out'   => $request->clock_out,
+        'breaks'      => $request->breaks,
+        'remark'      => $request->remark,
+        'status'      => 'pending',
+    ]);
+
+    return redirect()->route('attendance.show', $date->format('Y-m-d'));
 }
 }

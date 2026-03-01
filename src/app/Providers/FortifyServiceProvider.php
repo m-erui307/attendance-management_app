@@ -69,22 +69,25 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::authenticateUsing(function (Request $request) {
 
         // 管理者ログイン
-    if ($request->role === 'admin') {
+    if ($request->is('admin/login')) {
+
+        config(['fortify.guard' => 'admin']);
 
         $admin = \App\Models\Admin::where('email', $request->email)->first();
 
         if ($admin && \Hash::check($request->password, $admin->password)) {
-            \Auth::guard('admin')->login($admin);
-            return $admin;
+            return $admin; // ← login()しない
         }
 
         return null;
     }
 
     // ユーザーログイン
-    $user = User::where('email', $request->email)->first();
-    if ($user && Hash::check($request->password, $user->password)) {
-        Auth::guard('web')->login($user);
+    config(['fortify.guard' => 'web']);
+
+    $user = \App\Models\User::where('email', $request->email)->first();
+
+    if ($user && \Hash::check($request->password, $user->password)) {
         return $user;
     }
 

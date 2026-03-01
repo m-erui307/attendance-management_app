@@ -29,8 +29,8 @@
       <h2 class="title">申請一覧</h2>
       <div class="border">
         <ul class="border-list">
-          <li><a class="border-list__btn" href="">承認待ち</a></li>
-          <li><a class="border-list__btn" href="">承認済み</a></li>
+          <li><a class="border-list__btn {{ $status === 'pending' ? 'active' : '' }}" href="{{ route('admin.request.list', ['status' => 'pending']) }}">承認待ち</a></li>
+          <li><a class="border-list__btn {{ $status === 'approved' ? 'active' : '' }}" href="{{ route('admin.request.list', ['status' => 'approved']) }}">承認済み</a></li>
         </ul>
       </div>
       <table class="request-table">
@@ -45,15 +45,16 @@
           </tr>
         </thead>
         <tbody>
-          
+          @foreach($requests as $request)
           <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td><a class="table_detail" href="">詳細</a></td>
+            <td>{{ $request->status === 'pending' ? '承認待ち' : '承認済み' }}</td>
+            <td>{{ $request->user->name }}</td>
+            <td>{{ \Carbon\Carbon::parse($request->target_date)->format('Y/m/d') }}</td>
+            <td>{{ $request->remark }}</td>
+            <td>{{ $request->created_at->format('Y/m/d') }}</td>
+            <td><a class="table_detail" href="{{ route('admin.request.show', $request->id) }}">詳細</a></td>
           </tr>
+          @endforeach
         </tbody>
       </table>
     </div>

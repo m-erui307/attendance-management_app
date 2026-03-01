@@ -64,6 +64,10 @@ main {
     color: #000;
 }
 
+.border-list__btn.active {
+    font-weight: bold;
+}
+
 .request-table {
     width: 100%;
     color: #707070;

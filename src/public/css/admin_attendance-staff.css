@@ -76,8 +76,6 @@ main {
     color: #707070;
 }
 
-.calendar {}
-
 .next-month_btn {
     text-decoration: none;
     color: #707070;
@@ -106,4 +104,19 @@ th {
 .table_detail {
     color: #000;
     text-decoration: none;
+}
+
+.csv-btn {
+    display: block;
+    width: 100px;
+    color: #fff;
+    background-color: #000;
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+    border: none;
+    border-radius: 3px;
+    padding: 4px 10px;
+    margin-left: auto;
+    margin-top: 30px;
 }
