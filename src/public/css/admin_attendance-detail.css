@@ -104,3 +104,8 @@ input {
     border-radius: 3px;
     margin-top: 5px;
 }
+
+.form__error {
+    color: #ff0000;
+    margin-top: 5px;
+}

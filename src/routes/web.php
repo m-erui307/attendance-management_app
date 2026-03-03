@@ -27,7 +27,7 @@ use App\Http\Controllers\RequestController;
 // ログイン
 Route::get('/login', function () {
     return view('auth.login');
-})->middleware('guest')->name('login');
+})->middleware('guest:web')->name('login');
 
 // 会員登録
 Route::get('/register', function () {
@@ -90,24 +90,13 @@ Route::get('/attendance/detail/{date}', [AttendanceController::class, 'show'])
 Route::put('/attendance/{date}', [AttendanceController::class, 'update'])
     ->name('attendance.update');
 
-Route::prefix('admin')->group(function () {
 
-    // ログイン画面表示
-    Route::get('/login', function () {
+// ログイン画面表示
+    Route::get('/admin/login', function () {
         return view('admin_login');
     })->middleware('guest:admin')->name('admin.login');
 
-    // 管理者ログイン処理
-    Route::post('/login', function (Request $request) {
-
-        $admin = \App\Models\Admin::where('email', $request->email)->first();
-
-        if ($admin && \Hash::check($request->password, $admin->password)) {
-            \Auth::guard('admin')->login($admin);
-            return redirect()->route('admin.attendance.list');
-        }
-    })->middleware('guest:admin');
-
+Route::prefix('admin')->group(function () {
     // ログアウト
     Route::post('/logout', [AdminAttendanceController::class, 'logout'])
         ->middleware('auth:admin')
@@ -135,20 +124,20 @@ Route::prefix('admin')
             [AdminRequestController::class, 'show'])
             ->name('admin.request.show');
 
-        Route::get('/admin/staff', [AdminStaffController::class, 'index'])
+        Route::get('/staff', [AdminStaffController::class, 'index'])
             ->name('admin.staff.list');
 
         Route::get('/staff/{user}', [AdminStaffController::class, 'show'])
             ->name('admin.staff.show');
 
-        Route::get('/admin/request-list', [AdminRequestController::class, 'index'])
+        Route::get('/request-list', [AdminRequestController::class, 'index'])
             ->name('admin.request.list');
 
-        Route::put('/admin/request/{id}/approve',
+        Route::put('/request/{id}/approve',
         [AdminRequestController::class, 'approve'])
             ->name('admin.request.approve');
 
-        Route::get('/admin/staff/{user}/attendance/csv', [AdminAttendanceController::class, 'exportCsv'])
+        Route::get('/staff/{user}/attendance/csv', [AdminAttendanceController::class, 'exportCsv'])
             ->name('admin.staff.attendance.csv');
 
 });

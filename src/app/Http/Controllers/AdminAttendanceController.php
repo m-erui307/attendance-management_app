@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Response;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Attendance;
+use App\Http\Requests\AdminAttendanceDetailRequest;
 
 class AdminAttendanceController extends Controller
 {
@@ -147,7 +148,7 @@ class AdminAttendanceController extends Controller
     return Response::stream($callback, 200, $headers);
 }
 
-    public function update(Request $request, $userId, $date)
+    public function update(AdminAttendanceDetailRequest $request, $userId, $date)
 {
     $date = Carbon::parse($date);
 
@@ -165,6 +166,7 @@ class AdminAttendanceController extends Controller
     // 勤怠更新
     $attendance->clock_in = $request->clock_in ?: null;
     $attendance->clock_out = $request->clock_out ?: null;
+    $attendance->remark = $request->remark ?: null;
     $attendance->save();
 
     // 既存の休憩を全削除

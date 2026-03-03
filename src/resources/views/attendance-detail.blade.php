@@ -12,7 +12,7 @@
     <img class="header-logo" src="../../../img/COACHTECHヘッダーロゴ.png" alt="COACHTECH">
     <nav class="header-nav">
       <ul class="header-nav-list">
-        <li class="header-nav-item"><a href="">勤怠</a></li>
+        <li class="header-nav-item"><a href="{{ route('attendance.index') }}">勤怠</a></li>
         <li class="header-nav-item"><a href="{{ route('attendance.list') }}">勤怠一覧</a></li>
         <li class="header-nav-item"><a href="{{ route('request.list') }}">申請</a></li>
         <li>
@@ -28,87 +28,101 @@
     <div class="content">
       <h2 class="title">勤怠詳細</h2>
       @php
-    // 未出勤日対策
-    $attendance = $attendance ?? null;
-    $user = $user ?? auth()->user();
-    $date = $date ?? now();
-    $breaks = $breaks ?? [];
-    $breakCount = count($breaks);
-  @endphp
-      <form action="{{ route('request.store') }}" method="post">
-    @csrf
-    <input type="hidden" name="target_date" value="{{ $date->format('Y-m-d') }}">
-    <input type="hidden" name="attendance_id" value="{{ $attendance?->id }}">
-      <table class="detail-table">
-        <tr>
-          <th>名前</th>
-          <td>{{ optional(auth()->user())->name }}</td>
-        </tr>
-        <tr>
-          <th>日付</th>
-          <td class="date-cell">
-  <span class="year">{{ $date->format('Y年') }}</span>
-  <span class="md">{{ $date->format('n月j日') }}</span>
-</td>
-        </tr>
-        <tr>
-          <th>出勤・退勤</th>
-          <td>
-            @if($pendingRequest)
-    {{ $attendance?->clock_in ? \Carbon\Carbon::parse($attendance->clock_in)->format('H:i') : '' }}
-    <span class="tilde">〜</span>
-    {{ $attendance?->clock_out ? \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') : '' }}
-@else
-    <input type="time" name="clock_in"
-        value="{{ $attendance?->clock_in ? \Carbon\Carbon::parse($attendance->clock_in)->format('H:i') : '' }}">
-    <span class="tilde">〜</span>
-    <input type="time" name="clock_out"
-        value="{{ $attendance?->clock_out ? \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') : '' }}">
-@endif
-          </td>
-        </tr>
-        @php
-    $loopCount = $pendingRequest ? $breakCount : $breakCount + 1;
-@endphp
+        $attendance = $attendance ?? null;
+        $user = $user ?? auth()->user();
+        $date = $date ?? now();
+        $breaks = $breaks ?? [];
+        $breakCount = count($breaks);
+        $clockIn = old('clock_in', $attendance?->clock_in ? \Carbon\Carbon::parse($attendance->clock_in)->format('H:i') : '');
+        $clockOut = old('clock_out', $attendance?->clock_out ? \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') : '');
+      @endphp
+      <form action="{{ route('attendance.update', ['date' => $date->format('Y-m-d')]) }}" method="post" novalidate>
+        @csrf
+        @method('PUT')
+        <input type="hidden" name="target_date" value="{{ $date->format('Y-m-d') }}">
+        <input type="hidden" name="attendance_id" value="{{ $attendance?->id }}">
+        <table class="detail-table">
+          <tr>
+            <th>名前</th>
+            <td>{{ optional(auth()->user())->name }}</td>
+          </tr>
+          <tr>
+            <th>日付</th>
+            <td class="date-cell">
+              <span class="year">{{ $date->format('Y年') }}</span>
+              <span class="md">{{ $date->format('n月j日') }}</span>
+            </td>
+          </tr>
+          <tr>
+            <th>出勤・退勤</th>
+            <td>
+              @if($pendingRequest)
+                {{ $attendance?->clock_in ? \Carbon\Carbon::parse($attendance->clock_in)->format('H:i') : '' }}
+                <span class="tilde">〜</span>
+                {{ $attendance?->clock_out ? \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') : '' }}
+              @else
+                <input type="time" name="clock_in" value="{{ $clockIn }}">
+                <span class="tilde">〜</span>
+                <input type="time" name="clock_out" value="{{ $clockOut }}">
+              @endif
 
-@for($i = 0; $i < $loopCount; $i++)
-        <tr>
-          <th>
-            {{ $i === 0 ? '休憩' : '休憩'.($i+1) }}
-          </th>
-          <td>
-            @if($pendingRequest)
-    {{ $breaks[$i]['break_start'] ?? '' }}
-    <span class="tilde">〜</span>
-    {{ $breaks[$i]['break_end'] ?? '' }}
-@else
-    <input type="time" name="breaks[{{ $i }}][start]"
-        value="{{ $breaks[$i]['break_start'] ?? '' }}">
-    <span class="tilde">〜</span>
-    <input type="time" name="breaks[{{ $i }}][end]"
-        value="{{ $breaks[$i]['break_end'] ?? '' }}">
-@endif
-          </td>
-        </tr>
+              @error('attendance_time')
+                <div class="form__error">{{ $message }}</div>
+              @enderror
+              @error('clock_in')
+                <div class="form__error">{{ $message }}</div>
+              @enderror
+              @error('clock_out')
+                <div class="form__error">{{ $message }}</div>
+              @enderror
+            </td>
+          </tr>
+          @php
+            $loopCount = $pendingRequest ? $breakCount : $breakCount + 1;
+          @endphp
+          @for($i = 0; $i < $loopCount; $i++)
+          <tr>
+            <th>
+              {{ $i === 0 ? '休憩' : '休憩'.($i+1) }}
+            </th>
+            <td>
+              @if($pendingRequest)
+                {{ $breaks[$i]['break_start'] ?? '' }}<span class="tilde">〜</span>{{ $breaks[$i]['break_end'] ?? '' }}
+              @else
+                <input type="time" name="breaks[{{ $i }}][start]"
+                  value="{{ old("breaks.$i.start", $breaks[$i]['break_start'] ?? '') }}">
+                <span class="tilde">〜</span>
+                <input type="time" name="breaks[{{ $i }}][end]"
+                  value="{{ old("breaks.$i.end", $breaks[$i]['break_end'] ?? '') }}">
+              @endif
+
+              @error("breaks.$i")
+                <div class="form__error">{{ $message }}</div>
+              @enderror
+            </td>
+          </tr>
           @endfor
-        <tr>
-          <th>備考</th>
-          <td>
-            @if($pendingRequest)
-    {{ $attendance->remark ?? '' }}
-@else
-    <textarea class="remark" name="remark" rows="3">
-        {{ old('remark', $attendance->remark ?? '') }}
-    </textarea>
-@endif
-          </td>
-        </tr>
-      </table>
-      @if($pendingRequest)
-    <p class="request-msg">＊承認待ちのため修正はできません。</p>
-@else
-      <button class="edit_btn">修正</button>
-      @endif
+          <tr>
+            <th>備考</th>
+            <td>
+              @if($pendingRequest)
+                {{ $attendance->remark ?? '' }}
+              @else
+                <textarea class="remark" name="remark" rows="3">{{ old('remark', $attendance->remark ?? '') }}</textarea>
+              @endif
+
+              @error('remark')
+                <div class="form__error">{{ $message }}</div>
+              @enderror
+            </td>
+          </tr>
+        </table>
+        @if($pendingRequest)
+          <p class="request-msg">＊承認待ちのため修正はできません。</p>
+        @else
+          <button class="edit_btn">修正</button>
+        @endif
+      </form>
     </div>
   </main>
 </body>

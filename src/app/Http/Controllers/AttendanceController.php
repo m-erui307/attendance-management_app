@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Attendance;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Http\Requests\AttendanceDetailRequest;
 
 class AttendanceController extends Controller
 {
@@ -189,8 +190,10 @@ class AttendanceController extends Controller
     ));
 }
 
-    public function update(Request $request, $date)
+    public function update(AttendanceDetailRequest $request, $date)
 {
+    $data = $request->all();
+
     $date = Carbon::parse($date);
     $user = auth()->user();
 
@@ -208,10 +211,10 @@ class AttendanceController extends Controller
     \App\Models\AttendanceRequest::create([
         'user_id'     => $user->id,
         'target_date' => $date,
-        'clock_in'    => $request->clock_in,
-        'clock_out'   => $request->clock_out,
-        'breaks'      => $request->breaks,
-        'remark'      => $request->remark,
+        'clock_in'    => $data['clock_in'],
+        'clock_out'   => $data['clock_out'],
+        'breaks'      => $data['breaks'] ?? [],
+        'remark'      => $data['remark'],
         'status'      => 'pending',
     ]);
 

@@ -16,7 +16,7 @@
         <li class="header-nav-item"><a href="{{ route('admin.staff.list') }}">スタッフ一覧</a></li>
         <li class="header-nav-item"><a href="{{ route('admin.request.list') }}">申請一覧</a></li>
         <li>
-          <form action="{{ route('admin.logout') }}" method="post">
+          <form action="{{ route('admin.logout') }}" method="post" novalidate>
             @csrf
             <button class="header-logout">ログアウト</button>
           </form>
@@ -28,61 +28,69 @@
     <div class="content">
       <h2 class="title">勤怠詳細</h2>
       @php
-    // 未出勤日対策
-    $attendance = $attendance ?? null;
-    $user = $user ?? auth()->user();
-    $date = $date ?? now();
-    $breaks = $attendance?->breaks ?? collect();
-    $breakCount = $breaks->count();
-  @endphp
-      <form action="{{ route('admin.attendance.update',
-    ['user' => $user->id,
-    'date' => $date->format('Y-m-d')]) }}" method="post">
-    @csrf
-    @method('PUT')
-      <table class="detail-table">
-        <tr>
-          <th>名前</th>
-          <td>{{ $user->name }}</td>
-        </tr>
-        <tr>
-          <th>日付</th>
-          <td class="date-cell">
-  <span class="year">{{ $date->format('Y年') }}</span>
-  <span class="md">{{ $date->format('n月j日') }}</span>
-</td>
-        </tr>
-        <tr>
-          <th>出勤・退勤</th>
-          <td>
-            <input type="time" name="clock_in"
-  value="{{ $attendance?->clock_in ? \Carbon\Carbon::parse($attendance->clock_in)->format('H:i') : '' }}">
-<span class="tilde">〜</span>
-<input type="time" name="clock_out"
-  value="{{ $attendance?->clock_out ? \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') : '' }}">
-          </td>
-        </tr>
-        @for($i = 0; $i < $breakCount + 1; $i++)
-        <tr>
-          <th>{{ $i === 0 ? '休憩' : '休憩' . ($i + 1) }}</th>
-          <td>
-            <input type="time" name="breaks[{{ $i }}][start]"
-          value="{{ isset($breaks[$i]['break_start']) ? $breaks[$i]['break_start']->format('H:i') : '' }}">
-          <span class="tilde">〜</span>
-          <input type="time" name="breaks[{{ $i }}][end]"
-          value="{{ isset($breaks[$i]['break_end']) ? $breaks[$i]['break_end']->format('H:i') : '' }}">
-          </td>
-        </tr>
-        @endfor
-        <tr>
-          <th>備考</th>
-          <td>
-            <textarea class="remark" name="remark" rows="3">
-  </textarea>
-          </td>
-        </tr>
-      </table>
-      <button class="edit_btn">修正</button>
+        $attendance = $attendance ?? null;
+        $user = $user ?? auth()->user();
+        $date = $date ?? now();
+        $breaks = $attendance?->breaks ?? collect();
+        $breakCount = $breaks->count();
+      @endphp
+      <form action="{{ route('admin.attendance.update', ['user' => $user->id, 'date' => $date->format('Y-m-d')]) }}" method="post" novalidate>
+        @csrf
+        @method('PUT')
+        <table class="detail-table">
+          <tr>
+            <th>名前</th>
+            <td>{{ $user->name }}</td>
+          </tr>
+          <tr>
+            <th>日付</th>
+            <td class="date-cell">
+              <span class="year">{{ $date->format('Y年') }}</span>
+              <span class="md">{{ $date->format('n月j日') }}</span>
+            </td>
+          </tr>
+          <tr>
+            <th>出勤・退勤</th>
+            <td>
+              <input type="time" name="clock_in" value="{{ old('clock_in', $attendance?->clock_in ? \Carbon\Carbon::parse($attendance->clock_in)->format('H:i') : '') }}">
+              <span class="tilde">〜</span>
+              <input type="time" name="clock_out" value="{{ old('clock_out', $attendance?->clock_out ? \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') : '') }}">
+              @error('attendance_time')
+                <div class="form__error">{{ $message }}</div>
+              @enderror
+              @error('clock_in')
+                <div class="form__error">{{ $message }}</div>
+              @enderror
+              @error('clock_out')
+                <div class="form__error">{{ $message }}</div>
+              @enderror
+            </td>
+          </tr>
+          @for($i = 0; $i < $breakCount + 1; $i++)
+          <tr>
+            <th>{{ $i === 0 ? '休憩' : '休憩' . ($i + 1) }}</th>
+            <td>
+              <input type="time" name="breaks[{{ $i }}][start]" value="{{ old("breaks.$i.start", isset($breaks[$i]['break_start']) ? \Carbon\Carbon::parse($breaks[$i]['break_start'])->format('H:i') : '') }}">
+              <span class="tilde">〜</span>
+              <input type="time" name="breaks[{{ $i }}][end]" value="{{ old("breaks.$i.end", isset($breaks[$i]['break_end']) ? \Carbon\Carbon::parse($breaks[$i]['break_end'])->format('H:i') : '') }}">
+              @error("breaks.$i")
+                <div class="form__error">{{ $message }}</div>
+              @enderror
+            </td>
+          </tr>
+          @endfor
+          <tr>
+            <th>備考</th>
+            <td>
+              <textarea class="remark" name="remark" rows="3">{{ old('remark', $attendance?->remark ?? '') }}</textarea>
+              @error('remark')
+                <div class="form__error">{{ $message }}</div>
+              @enderror
+            </td>
+          </tr>
+        </table>
+        <button class="edit_btn">修正</button>
+      </form>
     </div>
   </main>
 </body>
