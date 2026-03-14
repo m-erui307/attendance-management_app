@@ -122,13 +122,13 @@ class AttendanceController extends Controller
         'prevMonth',
         'nextMonth'
     ));
-}
+    }
 
     /**
     * 勤怠詳細
     */
     public function show($date)
-{
+    {
     $date = Carbon::parse($date);
     $user = auth()->user();
 
@@ -188,10 +188,10 @@ class AttendanceController extends Controller
         'breaks',
         'pendingRequest'
     ));
-}
+    }
 
     public function update(AttendanceDetailRequest $request, $date)
-{
+    {
     $data = $request->all();
 
     $date = Carbon::parse($date);
@@ -219,5 +219,5 @@ class AttendanceController extends Controller
     ]);
 
     return redirect()->route('attendance.show', $date->format('Y-m-d'));
-}
+    }
 }

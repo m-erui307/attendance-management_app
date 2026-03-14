@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Database\Seeders\AdminsTableSeeder;
+use Database\Seeders\UserSeeder;
+use Database\Seeders\AttendanceSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -12,12 +14,13 @@ class DatabaseSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
-    {
-        // \App\Models\User::factory(10)->create();
 
+    public function run(): void
+    {
         $this->call([
-        AdminsTableSeeder::class,
+            AdminsTableSeeder::class,
+            UserSeeder::class,
+            AttendanceSeeder::class,
         ]);
     }
 }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>勤怠登録</title>
+  <title>勤怠登録（一般ユーザー）</title>
   <link rel="stylesheet" href="{{ asset('css/sanitize.css') }}">
   <link rel="stylesheet" href="{{ asset('css/attendance.css') }}">
 </head>
@@ -12,6 +12,16 @@
     <img class="header-logo" src="../../../img/COACHTECHヘッダーロゴ.png" alt="COACHTECH">
     <nav class="header-nav">
       <ul class="header-nav-list">
+        @if($attendance && $attendance->clock_out)
+        <li class="header-nav-item"><a href="{{ route('attendance.list') }}">今月の出勤一覧</a></li>
+        <li class="header-nav-item"><a href="{{ route('request.list') }}">申請一覧</a></li>
+        <li>
+          <form action="{{ route('logout') }}" method="post">
+            @csrf
+            <button class="header-logout">ログアウト</button>
+          </form>
+        </li>
+        @else
         <li class="header-nav-item"><a href="{{ route('attendance.index') }}">勤怠</a></li>
         <li class="header-nav-item"><a href="{{ route('attendance.list') }}">勤怠一覧</a></li>
         <li class="header-nav-item"><a href="{{ route('request.list') }}">申請</a></li>
@@ -21,6 +31,7 @@
             <button class="header-logout">ログアウト</button>
           </form>
         </li>
+        @endif
       </ul>
     </nav>
   </header>
@@ -42,7 +53,8 @@
       <div class="time" id="current-time">
       </div>
       @if (!$attendance || !$attendance->clock_in)
-      <form method="post" action="/attendance/start">@csrf
+      <form method="post" action="/attendance/start">
+        @csrf
         <button class="clock-in_btn">出勤</button>
       </form>
       @elseif ($attendance->clock_out)
@@ -50,15 +62,18 @@
         お疲れ様でした。
       </p>
       @elseif ($attendance->breaks()->whereNull('break_end')->exists())
-      <form method="post" action="/break/end">@csrf
+      <form method="post" action="/break/end">
+        @csrf
         <button class="end-break_btn">休憩戻</button>
       </form>
       @else
       <div class="btn-content">
-        <form method="post" action="/attendance/end">@csrf
+        <form method="post" action="/attendance/end">
+          @csrf
           <button class="clock-out_btn">退勤</button>
         </form>
-        <form method="post" action="/break/start">@csrf
+        <form method="post" action="/break/start">
+          @csrf
           <button class="start-break_btn">休憩入</button>
         </form>
       </div>

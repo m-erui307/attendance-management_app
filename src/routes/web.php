@@ -11,6 +11,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminStaffController;
 use App\Http\Controllers\AdminRequestController;
 use App\Http\Controllers\RequestController;
+use App\Http\Controllers\AdminLoginController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,90 +25,74 @@ use App\Http\Controllers\RequestController;
 */
 
 
-// ログイン
-Route::get('/login', function () {
-    return view('auth.login');
-})->middleware('guest:web')->name('login');
+Route::middleware('guest')->group(function () {
+    // ログイン
+    Route::get('/login', fn() => view('auth.login'))->name('login');
 
-// 会員登録
-Route::get('/register', function () {
-    return view('auth.register');
-})->middleware('guest')->name('register');
+    // 会員登録
+    Route::get('/register', fn() => view('auth.register'))->name('register');
+});
 
-// メール認証案内画面
-Route::get('/email/verify', function () {
-    return view('auth.verify-email');
-})->middleware('auth')->name('verification.notice');
+Route::middleware(['web', 'auth:web'])->group(function () {
+    // ログアウト
+    Route::post('/logout', function () {
+            Auth::guard('web')->logout();
+            return redirect('/login');
+        })->name('logout');
 
-// メール認証完了（リンククリック時）
-Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill();
-    return redirect()->route('attendance.index');
-})->middleware(['auth', 'signed'])->name('verification.verify');
-
-// 認証メール再送
-Route::post('/email/verification-notification', function (Request $request) {
-    $request->user()->sendEmailVerificationNotification();
-
-    return back()->with('message', '認証メールを再送しました。');
-})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
-
-// ログアウト
-Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
-    ->middleware('auth')
-    ->name('logout');
-
-Route::middleware(['auth'])->group(function () {
-
-    // 勤怠画面
+    // 勤怠画面（メール認証必須）
     Route::get('/attendance', [AttendanceController::class, 'index'])
         ->middleware('verified')
         ->name('attendance.index');
 
-    // 出勤
-    Route::post('/attendance/start', [AttendanceController::class, 'start'])
-        ->name('attendance.start');
+    Route::post('/attendance/start', [AttendanceController::class, 'start'])->name('attendance.start');
+    Route::post('/attendance/end', [AttendanceController::class, 'end'])->name('attendance.end');
 
-    // 退勤
-    Route::post('/attendance/end', [AttendanceController::class, 'end'])
-        ->name('attendance.end');
+    Route::post('/break/start', [BreakController::class, 'start'])->name('break.start');
+    Route::post('/break/end', [BreakController::class, 'end'])->name('break.end');
 
-    // 休憩開始
-    Route::post('/break/start', [BreakController::class, 'start'])
-        ->name('break.start');
+    // 申請一覧・送信
+    Route::get('/requests', [RequestController::class, 'index'])->name('request.list');
+    Route::post('/requests', [RequestController::class, 'store'])->name('request.store');
 
-    // 休憩終了
-    Route::post('/break/end', [BreakController::class, 'end'])
-        ->name('break.end');
+    // 勤怠詳細・更新
+    Route::get('/attendance/list', [AttendanceController::class, 'list'])->name('attendance.list');
+    Route::get('/attendance/detail/{date}', [AttendanceController::class, 'show'])->name('attendance.show');
+    Route::put('/attendance/{date}', [AttendanceController::class, 'update'])->name('attendance.update');
+
+    // メール認証関連
+    Route::get('/email/verify', fn() => view('auth.verify-email'))
+        ->middleware('auth')->name('verification.notice');
+
+    Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+        $request->fulfill();
+        return redirect()->route('attendance.index');
+    })->middleware(['auth', 'signed'])->name('verification.verify');
+
+    Route::post('/email/verification-notification', function (Request $request) {
+        $request->user()->sendEmailVerificationNotification();
+        return back()->with('message', '認証メールを再送しました。');
+    })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 });
 
-Route::get('/attendance/list', [AttendanceController::class, 'list'])
-    ->name('attendance.list');
 
-Route::get('/attendance/detail/{date}', [AttendanceController::class, 'show'])
-    ->name('attendance.show');
+Route::middleware('guest:admin')->group(function () {
 
-Route::put('/attendance/{date}', [AttendanceController::class, 'update'])
-    ->name('attendance.update');
+    // 管理者ログイン
+    Route::get('/admin/login', [AdminLoginController::class,'showLoginForm'])->name('admin.login');
 
-
-// ログイン画面表示
-    Route::get('/admin/login', function () {
-        return view('admin_login');
-    })->middleware('guest:admin')->name('admin.login');
-
-Route::prefix('admin')->group(function () {
-    // ログアウト
-    Route::post('/logout', [AdminAttendanceController::class, 'logout'])
-        ->middleware('auth:admin')
-        ->name('admin.logout');
-
+    Route::post('/admin/login', [AdminLoginController::class,'login'])->name('admin.login.post');
 });
 
 
 Route::prefix('admin')
     ->middleware('auth:admin')
     ->group(function () {
+
+        Route::post('/logout', function () {
+            Auth::guard('admin')->logout();
+            return redirect('/admin/login');
+        })->name('admin.logout');
 
         Route::get('/attendance', [AdminAttendanceController::class, 'index'])
             ->name('admin.attendance.list');
@@ -140,13 +125,4 @@ Route::prefix('admin')
         Route::get('/staff/{user}/attendance/csv', [AdminAttendanceController::class, 'exportCsv'])
             ->name('admin.staff.attendance.csv');
 
-});
-
-
-Route::middleware('auth')->group(function () {
-    // 申請一覧画面
-    Route::get('/requests', [RequestController::class, 'index'])->name('request.list');
-
-    // 申請送信
-    Route::post('/requests', [RequestController::class, 'store'])->name('request.store');
 });

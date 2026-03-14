@@ -24,6 +24,7 @@ use App\Http\Responses\LoginResponse;
 use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
 use Laravel\Fortify\Contracts\RegisterResponse as RegisterResponseContract;
 use App\Http\Responses\RegisterResponse;
+use App\Http\Requests\AdminLoginRequest;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -32,7 +33,7 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(LogoutResponse::class, CustomLogoutResponse::class);
+        $this->app->bind(FortifyLoginRequest::class, LoginRequest::class);
 
         $this->app->singleton(LoginResponseContract::class, LoginResponse::class);
 
@@ -46,52 +47,37 @@ class FortifyServiceProvider extends ServiceProvider
     {
         Fortify::createUsersUsing(CreateNewUser::class);
 
-        Fortify::registerView(function () {
-            return view('auth.register');
-        });
-
-        Fortify::loginView(function (Request $request) {
-    if ($request->is('admin/login')) {
-        return view('admin_login'); // 管理者用
-    }
-    return view('auth.login'); // ユーザー用
-});
-
-        RateLimiter::for('login', function (Request $request) {
-            $email = (string) $request->email;
-
-            return Limit::perMinute(10)->by($email . $request->ip());
-        });
-
-        app()->bind(FortifyLoginRequest::class, LoginRequest::class);
-
-
+        // 認証処理
         Fortify::authenticateUsing(function (Request $request) {
 
-        // 管理者ログイン
-    if ($request->input('role') === 'admin') {
+            // 管理者ログイン判定
+            if ($request->is('admin/*') || $request->is('admin/login')) {
+                /** @var AdminLoginRequest $adminRequest */
+                $adminRequest = app(AdminLoginRequest::class)->merge($request->all());
+                $adminRequest->validateResolved();
 
-        $admin = Admin::where('email', $request->email)->first();
+                $admin = Admin::where('email', $adminRequest->email)->first();
 
-        if ($admin && Hash::check($request->password, $admin->password)) {
+                if ($admin && Hash::check($adminRequest->password, $admin->password)) {
+                    Auth::guard('admin')->login($admin);
+                    return $admin;
+                }
 
-            Auth::guard('admin')->login($admin); // ← 明示的にadminでログイン
-            return $admin;
-        }
+                return null;
+            }
 
-        return null;
+            // ユーザーログイン
+            /** @var LoginRequest $userRequest */
+            $userRequest = app(LoginRequest::class)->merge($request->all());
+            $userRequest->validateResolved();
+
+            $user = User::where('email', $userRequest->email)->first();
+
+            if ($user && Hash::check($userRequest->password, $user->password)) {
+                return $user;
+            }
+
+            return null;
+        });
     }
-
-    // ユーザーログイン
-    $user = User::where('email', $request->email)->first();
-
-    if ($user && Hash::check($request->password, $user->password)) {
-
-        Auth::guard('web')->login($user); // ← 明示的にwebでログイン
-        return $user;
-    }
-
-    return null;
-});
-}
 }

@@ -74,26 +74,26 @@ class AdminRequestController extends Controller
     }
 
     public function show($id)
-{
-    $request = AttendanceRequest::with('user')
-        ->findOrFail($id);
+    {
+        $request = AttendanceRequest::with('user')
+            ->findOrFail($id);
 
-    $user = $request->user;
-    $date = Carbon::parse($request->target_date);
+        $user = $request->user;
+        $date = Carbon::parse($request->target_date);
 
-    $breaks = collect($request->breaks ?? [])
-    ->filter(function ($break) {
-        return !empty($break['start']) || !empty($break['end']);
-    })
-    ->values()
-    ->toArray();
+        $breaks = collect($request->breaks ?? [])
+        ->filter(function ($break) {
+            return !empty($break['start']) || !empty($break['end']);
+        })
+        ->values()
+        ->toArray();
 
-return view('admin_approval', compact(
-    'request',
-    'user',
-    'date',
-    'breaks'
-));
-}
+        return view('admin_approval', compact(
+            'request',
+            'user',
+            'date',
+            'breaks'
+        ));
+    }
 }
 

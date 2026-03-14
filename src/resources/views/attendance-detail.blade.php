@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>勤怠詳細</title>
+  <title>勤怠詳細（一般ユーザー）</title>
   <link rel="stylesheet" href="{{ asset('css/sanitize.css') }}">
   <link rel="stylesheet" href="{{ asset('css/attendance-detail.css') }}">
 </head>
@@ -87,7 +87,9 @@
             </th>
             <td>
               @if($pendingRequest)
-                {{ $breaks[$i]['break_start'] ?? '' }}<span class="tilde">〜</span>{{ $breaks[$i]['break_end'] ?? '' }}
+                {{ $breaks[$i]['break_start'] ?? '' }}
+                <span class="tilde">〜</span>
+                {{ $breaks[$i]['break_end'] ?? '' }}
               @else
                 <input type="time" name="breaks[{{ $i }}][start]"
                   value="{{ old("breaks.$i.start", $breaks[$i]['break_start'] ?? '') }}">

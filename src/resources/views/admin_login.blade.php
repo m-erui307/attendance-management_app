@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ログイン</title>
+  <title>ログイン（管理者）</title>
   <link rel="stylesheet" href="{{ asset('css/sanitize.css') }}">
   <link rel="stylesheet" href="{{ asset('css/admin_login.css') }}">
 </head>
@@ -16,9 +16,9 @@
       <div class="login-form__heading">
         <h1>管理者ログイン</h1>
       </div>
-      <form class="form" action="{{ route('login') }}" method="post" novalidate>
+      <form class="form" action="{{ route('admin.login.post') }}" method="post" novalidate>
         @csrf
-        <input type="hidden" name="role" value="admin">
+        <input type="hidden" name="login_type" value="admin">
         <div class="form__group">
           <div class="form__group-title">
             <span class="form__label--item">メールアドレス</span>

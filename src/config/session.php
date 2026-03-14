@@ -198,4 +198,18 @@ return [
 
     'same_site' => 'lax',
 
+    'admins' => [
+        'driver' => 'file',
+        'lifetime' => env('ADMIN_SESSION_LIFETIME', 120),
+        'expire_on_close' => false,
+        'encrypt' => false,
+        'files' => storage_path('framework/sessions/admin'),
+        'cookie' => env('ADMIN_SESSION_COOKIE', 'admin_session'),
+        'path' => '/',
+        'domain' => null,
+        'secure' => env('SESSION_SECURE_COOKIE', false),
+        'http_only' => true,
+        'same_site' => 'lax',
+    ],
+
 ];

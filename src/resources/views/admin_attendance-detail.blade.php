@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>勤怠詳細</title>
+  <title>勤怠詳細（管理者）</title>
   <link rel="stylesheet" href="{{ asset('css/sanitize.css') }}">
   <link rel="stylesheet" href="{{ asset('css/admin_attendance-detail.css') }}">
 </head>
@@ -31,6 +31,8 @@
         $attendance = $attendance ?? null;
         $user = $user ?? auth()->user();
         $date = $date ?? now();
+        $clockIn = old('clock_in', $attendance?->clock_in ? \Carbon\Carbon::parse($attendance->clock_in)->format('H:i') : '');
+        $clockOut = old('clock_out', $attendance?->clock_out ? \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') : '');
         $breaks = $attendance?->breaks ?? collect();
         $breakCount = $breaks->count();
       @endphp
@@ -52,9 +54,14 @@
           <tr>
             <th>出勤・退勤</th>
             <td>
-              <input type="time" name="clock_in" value="{{ old('clock_in', $attendance?->clock_in ? \Carbon\Carbon::parse($attendance->clock_in)->format('H:i') : '') }}">
-              <span class="tilde">〜</span>
-              <input type="time" name="clock_out" value="{{ old('clock_out', $attendance?->clock_out ? \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') : '') }}">
+              @if($pendingRequest)
+                {{ $clockIn }}<span class="tilde">〜</span>{{ $clockOut }}
+              @else
+                <input type="time" name="clock_in" value="{{ old('clock_in', $attendance?->clock_in ? \Carbon\Carbon::parse($attendance->clock_in)->format('H:i') : '') }}">
+                <span class="tilde">〜</span>
+                <input type="time" name="clock_out" value="{{ old('clock_out', $attendance?->clock_out ? \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') : '') }}">
+              @endif
+
               @error('attendance_time')
                 <div class="form__error">{{ $message }}</div>
               @enderror
@@ -66,13 +73,21 @@
               @enderror
             </td>
           </tr>
-          @for($i = 0; $i < $breakCount + 1; $i++)
+          @php
+          $loopCount = $pendingRequest ? $breakCount : $breakCount + 1;
+          @endphp
+          @for($i = 0; $i < $loopCount; $i++)
           <tr>
             <th>{{ $i === 0 ? '休憩' : '休憩' . ($i + 1) }}</th>
             <td>
-              <input type="time" name="breaks[{{ $i }}][start]" value="{{ old("breaks.$i.start", isset($breaks[$i]['break_start']) ? \Carbon\Carbon::parse($breaks[$i]['break_start'])->format('H:i') : '') }}">
-              <span class="tilde">〜</span>
-              <input type="time" name="breaks[{{ $i }}][end]" value="{{ old("breaks.$i.end", isset($breaks[$i]['break_end']) ? \Carbon\Carbon::parse($breaks[$i]['break_end'])->format('H:i') : '') }}">
+              @if($pendingRequest)
+                {{ $breaks[$i]['break_start'] ?? '' }}<span class="tilde">〜</span>{{ $breaks[$i]['break_end'] ?? '' }}
+              @else
+                <input type="time" name="breaks[{{ $i }}][start]" value="{{ old("breaks.$i.start", isset($breaks[$i]['break_start']) ? \Carbon\Carbon::parse($breaks[$i]['break_start'])->format('H:i') : '') }}">
+                <span class="tilde">〜</span>
+                <input type="time" name="breaks[{{ $i }}][end]" value="{{ old("breaks.$i.end", isset($breaks[$i]['break_end']) ? \Carbon\Carbon::parse($breaks[$i]['break_end'])->format('H:i') : '') }}">
+              @endif
+
               @error("breaks.$i")
                 <div class="form__error">{{ $message }}</div>
               @enderror
@@ -82,14 +97,23 @@
           <tr>
             <th>備考</th>
             <td>
-              <textarea class="remark" name="remark" rows="3">{{ old('remark', $attendance?->remark ?? '') }}</textarea>
+              @if($pendingRequest)
+                {{ $attendance->remark ?? '' }}
+              @else
+                <textarea class="remark" name="remark" rows="3">{{ old('remark', $attendance?->remark ?? '') }}</textarea>
+              @endif
+              
               @error('remark')
                 <div class="form__error">{{ $message }}</div>
               @enderror
             </td>
           </tr>
         </table>
-        <button class="edit_btn">修正</button>
+        @if($pendingRequest)
+          <p class="request-msg">＊承認待ちのため修正はできません。</p>
+        @else
+          <button class="edit_btn">修正</button>
+        @endif
       </form>
     </div>
   </main>

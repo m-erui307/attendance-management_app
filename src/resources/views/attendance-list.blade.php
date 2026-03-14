@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>勤怠一覧</title>
+  <title>勤怠一覧（一般ユーザー）</title>
   <link rel="stylesheet" href="{{ asset('css/sanitize.css') }}">
   <link rel="stylesheet" href="{{ asset('css/attendance-list.css') }}">
 </head>
@@ -28,14 +28,12 @@
     <div class="content">
       <h2 class="title">勤怠一覧</h2>
       <div class="calendar-nav">
-        <a class="last-month_btn"
-        href="{{ route('attendance.list', ['month' => $prevMonth]) }}"><span class="arrow">←</span>前月</a>
+        <a class="last-month_btn" href="{{ route('attendance.list', ['month' => $prevMonth]) }}"><span class="arrow">←</span>前月</a>
         <div class="calendar">
           <img class="calendar-icon" src="../../../img/calendar-icon.png" alt="カレンダー">
           {{ $targetMonth->format('Y/m') }}
         </div>
-        <a class="next-month_btn"
-        href="{{ route('attendance.list', ['month' => $nextMonth]) }}">翌月<span class="arrow">→</span></a>
+        <a class="next-month_btn" href="{{ route('attendance.list', ['month' => $nextMonth]) }}">翌月<span class="arrow">→</span></a>
       </div>
       <table class="attendance-table">
         <thead>

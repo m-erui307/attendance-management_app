@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>勤怠一覧</title>
+  <title>勤怠一覧（管理者）</title>
   <link rel="stylesheet" href="{{ asset('css/sanitize.css') }}">
   <link rel="stylesheet" href="{{ asset('css/admin_attendance-list.css') }}">
 </head>
@@ -28,14 +28,12 @@
     <div class="content">
       <h2 class="title">{{ $targetDate->format('Y年n月j日') }}の勤怠</h2>
       <div class="calendar-nav">
-        <a class="last-month_btn"
-     href="{{ route('admin.attendance.list', ['date' => $prevDate]) }}"><span class="arrow">←</span>前日</a>
+        <a class="last-month_btn" href="{{ route('admin.attendance.list', ['date' => $prevDate]) }}"><span class="arrow">←</span>前日</a>
         <div class="calendar">
           <img class="calendar-icon" src="../../../img/calendar-icon.png" alt="カレンダー">
           {{ $targetDate->format('Y/m/d') }}
         </div>
-        <a class="next-month_btn"
-     href="{{ route('admin.attendance.list', ['date' => $nextDate]) }}">翌日<span class="arrow">→</span></a>
+        <a class="next-month_btn" href="{{ route('admin.attendance.list', ['date' => $nextDate]) }}">翌日<span class="arrow">→</span></a>
       </div>
       <table class="attendance-table">
         <thead>
@@ -57,10 +55,7 @@
             <td>{{ $item['attendance']?->clock_out?->format('H:i') }}</td>
             <td>{{ $item['attendance']?->break_time }}</td>
             <td>{{ $item['attendance']?->total_time }}</td>
-            <td><a class="table_detail" href="{{ route('admin.attendance.show',
-    ['user' => $item['user']->id,
-    'date' => $targetDate->format('Y-m-d')]
-) }}">詳細</a></td>
+            <td><a class="table_detail" href="{{ route('admin.attendance.show', ['user' => $item['user']->id, 'date' => $targetDate->format('Y-m-d')]) }}">詳細</a></td>
           </tr>
           @endif
           @endforeach

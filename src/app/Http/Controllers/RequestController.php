@@ -10,7 +10,7 @@ use Carbon\Carbon;
 class RequestController extends Controller
 {
     public function store(Request $request)
-{
+    {
     $user = auth()->user();
 
     $existing = AttendanceRequest::where('user_id', $user->id)
@@ -33,7 +33,7 @@ class RequestController extends Controller
     ]);
 
     return back();
-}
+    }
 
     public function index()
     {

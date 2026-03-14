@@ -21,24 +21,15 @@ class LoginRequest extends FortifyLoginRequest
      *
      * @return array
      */
-    public function rules(): array
+    public function rules()
     {
-        // 管理者ログインかどうかでバリデーションを分ける
-        if ($this->routeIs('admin.login')) {
-            return [
-                'email' => ['required', 'email'],
-                'password' => ['required'],
-            ];
-        }
-
-        // 通常ユーザーログイン
         return [
-            'email' => ['required', 'email'],
-            'password' => ['required'],
+            'email' => ['required','email'],
+            'password' => ['required']
         ];
     }
 
-    public function messages(): array
+    public function messages()
     {
         return [
             'email.required' => 'メールアドレスを入力してください',

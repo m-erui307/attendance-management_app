@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>申請一覧</title>
+  <title>申請一覧（一般ユーザー）</title>
   <link rel="stylesheet" href="{{ asset('css/sanitize.css') }}">
   <link rel="stylesheet" href="{{ asset('css/request-list.css') }}">
 </head>
@@ -46,14 +46,14 @@
         </thead>
         <tbody>
           @foreach ($requests as $request)
-    <tr>
-      <td>
-        @if ($request->status === 'pending')
-          承認待ち
-        @else
-          承認済み
-        @endif
-      </td>
+          <tr>
+            <td>
+              @if ($request->status === 'pending')
+                承認待ち
+              @else
+                承認済み
+              @endif
+            </td>
             <td>{{ $request->user->name }}</td>
             <td>{{ $request->target_date->format('Y/m/d') }}</td>
             <td>{{ $request->remark }}</td>

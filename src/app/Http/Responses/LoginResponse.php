@@ -10,12 +10,10 @@ class LoginResponse implements LoginResponseContract
 {
     public function toResponse($request)
     {
-        if ($request->input('role') === 'admin') {
-            // 管理者ログイン後
-            return redirect()->route('admin.attendance.list');
+        if (Auth::guard('admin')->check()) {
+            return redirect('/admin/attendance');
         }
 
-        // ユーザーログイン後
-        return redirect()->route('attendance.index');
+        return redirect('/attendance');
     }
 }
