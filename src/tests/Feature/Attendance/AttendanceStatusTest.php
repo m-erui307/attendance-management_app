@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Attendance;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\User;
@@ -16,7 +16,15 @@ class AttendanceStatusTest extends TestCase
      * @return void
      */
 
-    use RefreshDatabase;
+    use DatabaseMigrations;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // シーディング済みデータを毎テストで投入
+        $this->seed(\Database\Seeders\DatabaseSeeder::class);
+    }
 
     public function test_status_display()
     {
@@ -28,6 +36,7 @@ class AttendanceStatusTest extends TestCase
         $response->assertStatus(200);
     }
 
+    /** @test */
     public function shows_status_as_off_work_when_user_has_not_clocked_in()
     {
         $user = User::factory()->create();
@@ -45,6 +54,7 @@ class AttendanceStatusTest extends TestCase
 
         $attendance = Attendance::factory()->create([
             'user_id' => $user->id,
+            'work_date' => today(),
             'clock_in' => now(),
             'clock_out' => null,
         ]);
@@ -61,6 +71,7 @@ class AttendanceStatusTest extends TestCase
 
         $attendance = Attendance::factory()->create([
             'user_id' => $user->id,
+            'work_date' => today(),
             'clock_in' => now(),
             'clock_out' => null,
         ]);
@@ -83,6 +94,7 @@ class AttendanceStatusTest extends TestCase
 
         $attendance = Attendance::factory()->create([
             'user_id' => $user->id,
+            'work_date' => today(),
             'clock_in' => now()->subHours(8),
             'clock_out' => now(),
         ]);

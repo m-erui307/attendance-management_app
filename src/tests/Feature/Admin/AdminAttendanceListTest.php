@@ -17,7 +17,7 @@ class AdminAttendanceListTest extends TestCase
      * @return void
      */
 
-    use RefreshDatabase;
+    
 
     /** @test */
     public function admin_can_see_all_users_attendance_for_today()

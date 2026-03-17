@@ -17,7 +17,7 @@ class AttendanceDetailTest extends TestCase
      * @return void
      */
 
-    use RefreshDatabase;
+    
 
     /** @test */
     public function attendance_detail_displays_user_name()

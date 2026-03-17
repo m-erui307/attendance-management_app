@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
@@ -14,7 +14,14 @@ class RegisterTest extends TestCase
      * @return void
      */
 
-    use RefreshDatabase;
+    use DatabaseMigrations;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed(\Database\Seeders\DatabaseSeeder::class);
+    }
 
     public function test_name_required()
     {
@@ -59,45 +66,45 @@ class RegisterTest extends TestCase
     }
 
     public function test_password_minimum_length()
-{
-    $response = $this->post('/register', [
-        'name' => 'Test User',
-        'email' => 'test@example.com',
-        'password' => 'short',
-        'password_confirmation' => 'short'
-    ]);
+    {
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'short',
+            'password_confirmation' => 'short'
+        ]);
 
-    $response->assertSessionHasErrors([
+        $response->assertSessionHasErrors([
             'password' => 'パスワードは8文字以上で入力してください',
         ]);
-}
+    }
 
     public function test_password_confirmation_mismatch()
-{
-    $response = $this->post('/register', [
-        'name' => 'Test User',
-        'email' => 'test@example.com',
-        'password' => 'password123',
-        'password_confirmation' => 'different123'
-    ]);
+    {
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'different123'
+        ]);
 
-    $response->assertSessionHasErrors([
+        $response->assertSessionHasErrors([
             'password' => 'パスワードと一致しません',
         ]);
-}
+    }
 
     public function test_password_required()
-{
-    $response = $this->post('/register', [
-        'name' => 'Test User',
-        'email' => 'test@example.com',
-        'password' => '',
-        'password_confirmation' => ''
-    ]);
+    {
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => '',
+            'password_confirmation' => ''
+        ]);
 
-    $response->assertSessionHasErrors([
+        $response->assertSessionHasErrors([
             'password' => 'パスワードを入力してください',
         ]);
-}
+    }
 
 }

@@ -19,7 +19,7 @@ class EmailVerificationTest extends TestCase
      * @return void
      */
 
-    use RefreshDatabase;
+    
 
     public function verification_mail_sent_after_registration()
     {

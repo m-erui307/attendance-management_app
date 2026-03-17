@@ -17,7 +17,7 @@ class AttendanceEditTest extends TestCase
      * @return void
      */
 
-    use RefreshDatabase;
+    
 
     /** @test */
     public function clock_in_cannot_be_after_clock_out()

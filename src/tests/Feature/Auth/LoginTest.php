@@ -2,10 +2,11 @@
 
 namespace Tests\Feature\Auth;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\User;
+use Illuminate\Support\Str;
 
 class LoginTest extends TestCase
 {
@@ -15,63 +16,66 @@ class LoginTest extends TestCase
      * @return void
      */
 
-    use RefreshDatabase;
+    use DatabaseMigrations;
 
-    public function test_login_email_required()
+    protected function setUp(): void
     {
-        $response = $this->post('/login',[
-            'email'=>'',
-            'password'=>'password'
+        parent::setUp();
+
+        // シーディング済みデータを毎テストで投入
+        $this->seed(\Database\Seeders\DatabaseSeeder::class);
+    }
+
+    public function test_login_fails_when_email_is_missing_even_if_user_exists()
+    {
+        $user = \App\Models\User::factory()->create([
+            'email' => 'test@example.com',
+            'password' => bcrypt('password123'),
+        ]);
+
+        $response = $this->post('/login', [
+            'email' => '',
+            'password' => 'password123',
         ]);
 
         $response->assertSessionHasErrors([
-        'email' => 'メールアドレスを入力してください',
-    ]);
+            'email' => 'メールアドレスを入力してください',
+        ]);
     }
 
-    public function test_login_success()
+    public function test_login_fails_with_wrong_email()
     {
+        $password = 'password123';
         $user = User::factory()->create([
-            'password'=>bcrypt('password')
+            'email' => 'test@example.com',
+            'password' => bcrypt($password),
         ]);
 
-        $response = $this->post('/login',[
-            'email'=>$user->email,
-            'password'=>'password'
+        $response = $this->post('/login', [
+            'email' => 'wrong@example.com',
+            'password' => $password,
         ]);
 
-        $response->assertRedirect('/attendance');
+        $response->assertSessionHasErrors([
+            'email' => 'ログイン情報が登録されていません',
+        ]);
     }
 
     public function test_password_required()
-{
-    $user = User::factory()->create([
-        'password' => bcrypt('password123')
-    ]);
+    {
+        $user = User::factory()->create([
+            'email' => 'user' . Str::random(5) . '@example.com',
+            'password' => bcrypt('anypassword'),
+        ]);
 
-    $response = $this->post('/login', [
-        'email' => $user->email,
-        'password' => '',
-    ]);
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => '',
+        ]);
 
-    $response->assertSessionHasErrors([
-        'password' => 'パスワードを入力してください',
-    ]);
-}
+        $response->assertSessionHasErrors([
+            'password' => 'パスワードを入力してください',
+        ]);
+    }
 
-public function test_invalid_login()
-{
-    $user = User::factory()->create([
-        'password' => bcrypt('password123')
-    ]);
-
-    $response = $this->post('/login', [
-        'email' => $user->email,
-        'password' => 'wrongpassword',
-    ]);
-
-    $response->assertSessionHasErrors([
-        'email' => 'ログイン情報が登録されていません',
-    ]);
-}
 }

@@ -16,7 +16,7 @@ class AdminAttendanceDetailTest extends TestCase
      *
      * @return void
      */
-    use RefreshDatabase;
+    
 
     /** @test */
     public function admin_can_view_selected_attendance_detail()

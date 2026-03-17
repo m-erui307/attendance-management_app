@@ -18,7 +18,7 @@ class AdminAttendanceRequestTest extends TestCase
      * @return void
      */
 
-    use RefreshDatabase;
+    
 
     /** @test */
     public function can_view_pending_requests()

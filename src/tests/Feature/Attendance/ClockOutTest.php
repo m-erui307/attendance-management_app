@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Attendance;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\User;
@@ -16,48 +16,44 @@ class ClockOutTest extends TestCase
      * @return void
      */
 
-    use RefreshDatabase;
+    use DatabaseMigrations;
 
-    public function test_clock_out()
+    protected function setUp(): void
     {
-        $user = User::factory()->create();
+        parent::setUp();
 
-        $attendance = Attendance::factory()->create([
-    'user_id'=>$user->id,
-    'work_date'=>now()->toDateString(),
-    'clock_out'=>null
-]);
-
-        $this->actingAs($user)
-            ->post(route('attendance.end'));
-
-        $this->assertDatabaseMissing('attendances',[
-            'id'=>$attendance->id,
-            'clock_out'=>null
-        ]);
+        // シーディング済みデータを毎テストで投入
+        $this->seed(\Database\Seeders\DatabaseSeeder::class);
     }
 
-    public function user_can_clock_out()
+    /** @test */
+    public function user_can_see_clock_out_button_and_clock_out()
     {
+        // 勤務中のユーザーを作成
         $user = User::factory()->create();
 
         $attendance = Attendance::factory()->create([
             'user_id' => $user->id,
             'work_date' => now()->toDateString(),
-            'clock_out' => null,
+            'clock_out' => null, // まだ退勤していない
         ]);
 
-        $response = $this->actingAs($user)
-            ->post(route('attendance.end'));
+        // 勤怠ページにアクセスして「退勤」ボタンがあるか確認
+        $response = $this->actingAs($user)->get(route('attendance.index'));
+        $response->assertSee('退勤');
 
+        // 退勤処理
+        $response = $this->actingAs($user)->post(route('attendance.end'));
+
+        // 処理後は勤怠一覧にリダイレクト
         $response->assertRedirect(route('attendance.index'));
 
-        // 退勤が記録されていることを確認
-        $this->assertDatabaseHas('attendances', [
-            'id' => $attendance->id,
-        ]);
-
+        // DBに退勤時刻が記録されていること
         $this->assertNotNull($attendance->fresh()->clock_out);
+
+        // 退勤後、画面上で「退勤済」と表示されるか確認
+        $response = $this->actingAs($user)->get(route('attendance.index'));
+        $response->assertSee('退勤済');
     }
 
     /** @test */
@@ -71,11 +67,14 @@ class ClockOutTest extends TestCase
             'clock_out' => null,
         ]);
 
+        // 退勤処理
         $this->actingAs($user)->post(route('attendance.end'));
 
+        // 勤怠一覧画面にアクセス
         $response = $this->actingAs($user)->get(route('attendance.list'));
 
-        // 勤怠一覧で退勤時刻が表示されるか確認
-        $response->assertSee($attendance->fresh()->clock_out->format('H:i'));
+        // 勤怠一覧に退勤時刻が表示されているか確認
+        $clockOutTime = $attendance->fresh()->clock_out->format('H:i');
+        $response->assertSee($clockOutTime);
     }
 }

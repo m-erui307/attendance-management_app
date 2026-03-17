@@ -17,7 +17,7 @@ class AdminUserInfoTest extends TestCase
      * @return void
      */
 
-    use RefreshDatabase;
+    
 
     /** @test */
     public function admin_can_view_all_users_info()

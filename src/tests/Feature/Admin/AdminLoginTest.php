@@ -2,12 +2,13 @@
 
 namespace Tests\Feature\Admin;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\Admin;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class AdminLoginTest extends TestCase
 {
@@ -17,36 +18,42 @@ class AdminLoginTest extends TestCase
      * @return void
      */
 
-    use RefreshDatabase;
+    use DatabaseMigrations;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // シーディング済みデータを毎テストで投入
+        $this->seed(\Database\Seeders\DatabaseSeeder::class);
+    }
 
     /** @test */
     public function email_is_required_for_admin_login()
     {
-        // 管理者ユーザーを作成
-        $admin = User::factory()->create([
+        $admin = Admin::create([
+            'email' => 'admin' . rand(1000, 9999) . '@example.com',
             'password' => Hash::make('password123'),
         ]);
 
-        // メールアドレス未入力でログイン
         $response = $this->post('/admin/login', [
             'email' => '',
             'password' => 'password123',
         ]);
 
-        // バリデーションエラーが返ることを確認
         $response->assertSessionHasErrors([
             'email' => 'メールアドレスを入力してください',
         ]);
     }
 
     /** @test */
-    public function password_is_required_for_admin_login()
+    public function test_password_is_required_for_admin_login()
     {
-        $admin = User::factory()->create([
+        $admin = Admin::create([
+            'email' => 'admin' . rand(1000, 9999) . '@example.com',
             'password' => Hash::make('password123'),
         ]);
 
-        // パスワード未入力でログイン
         $response = $this->post('/admin/login', [
             'email' => $admin->email,
             'password' => '',
@@ -58,19 +65,18 @@ class AdminLoginTest extends TestCase
     }
 
     /** @test */
-    public function cannot_login_with_invalid_credentials()
+    public function test_cannot_login_with_invalid_credentials()
     {
-        $admin = User::factory()->create([
+        $admin = Admin::create([
+            'email' => 'admin' . rand(1000, 9999) . '@example.com',
             'password' => Hash::make('password123'),
         ]);
 
-        // 誤ったメールアドレスでログイン
         $response = $this->post('/admin/login', [
-            'email' => 'wrong@example.com',
+            'email' => 'wrong' . Str::random(5) . '@example.com',
             'password' => 'password123',
         ]);
 
-        // バリデーションメッセージを確認
         $response->assertSessionHasErrors([
             'email' => 'ログイン情報が登録されていません',
         ]);
